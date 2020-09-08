@@ -6,13 +6,19 @@
   },
   "options": {},
   "attributes": {
-    "price": {
+    "single_price": {
       "type": "decimal"
     },
-    "quantity": {
+    "product_quantity": {
+      "type": "integer"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "items_total_price": {
       "type": "decimal"
     },
-    "product": {
+    "product_id": {
       "type": "string"
     }
   }

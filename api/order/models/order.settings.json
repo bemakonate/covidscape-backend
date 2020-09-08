@@ -9,12 +9,6 @@
     "timestamps": true
   },
   "attributes": {
-    "customer_name": {
-      "type": "string"
-    },
-    "customer_address": {
-      "type": "string"
-    },
     "payment_intent_id": {
       "type": "string"
     },
@@ -27,11 +21,18 @@
     "taxes": {
       "type": "decimal"
     },
-    "customer_phone": {
-      "type": "string"
+    "cart": {
+      "type": "component",
+      "repeatable": true,
+      "component": "ordering.cart-item"
     },
-    "customer_email": {
-      "type": "email"
+    "customer_details": {
+      "type": "component",
+      "repeatable": false,
+      "component": "customer.customer-details"
+    },
+    "customer_name": {
+      "type": "string"
     }
   }
 }

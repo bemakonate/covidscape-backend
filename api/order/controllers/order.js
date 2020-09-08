@@ -62,9 +62,12 @@ module.exports = {
         const {
             paymentIntent,
             cart,
-            shipping_name,
-            shipping_address,
+            customerName,
+            customerAddress,
+            customerEmail,
+            customerPhone,
         } = ctx.request.body;
+
         //Payment intent for validation
         let paymentInfo;
         try {
@@ -92,22 +95,22 @@ module.exports = {
 
 
         //check if the data is proper
-
-        let product_qty = [];
-        let products = [];
         let sanitizedCart = [];
+        let orderCart = [];
 
 
         await Promise.all(cart.map(async (product) => {
             const foundProduct = await strapi.services.product.findOne({ id: product.id });
             if (foundProduct) {
-                product_qty.push({
-                    id: product.id,
-                    qty: product.qty
+                orderCart.push({
+                    product_name: foundProduct.title,
+                    single_price: foundProduct.price,
+                    product_id: foundProduct.id,
+                    product_quantity: product.qty,
+                    items_total_price: (foundProduct.price * product.qty).toFixed(2)
                 })
 
-                products.push(foundProduct);
-                sanitizedCart.push({ ...foundProduct, ...{ qty: product.qty } })
+                sanitizedCart.push({ ...foundProduct, qty: product.qty })
             }
             // Must return because of map method. We don’t necessarily need the returned data 
             return foundProduct;
@@ -115,31 +118,33 @@ module.exports = {
 
 
 
-        //Fetch products and add to products arrary
-        //Set up product_qty
 
-        let total_in_cents = strapi.config.functions.cart.cartTotal(sanitizedCart).toFixed(2) * 100;
-        let taxes_in_cents = strapi.config.functions.cart.cartTaxes(sanitizedCart).toFixed(2) * 100;
-        let subtotal_in_cents = strapi.config.functions.cart.cartSubtotal(sanitizedCart).toFixed(2) * 100;
-
+        //Fetch products and get the information about the cost
+        let orderTotal = strapi.config.functions.cart.cartTotal(sanitizedCart).toFixed(2);
+        let orderTaxes = strapi.config.functions.cart.cartTaxes(sanitizedCart).toFixed(2);
+        let orderSubtotal = strapi.config.functions.cart.cartSubtotal(sanitizedCart).toFixed(2);
 
         //Payment intent amount needs to be the same amount as total of the cart being saved
-        if (paymentInfo.amount !== total_in_cents) {
+        if (paymentInfo.amount !== (orderTotal * 100)) {
             ctx.response.status = 402;
             return "The total payment is different from the payment intent"
         }
 
         //To add field to collection you need to define the property name define in the cms
         const entry = {
-            shipping_name,
-            shipping_address,
-
-            product_qty,
-            products,
-            subtotal_in_cents,
-            taxes_in_cents,
-            total_in_cents,
             payment_intent_id,
+            customer_name: customerName,
+            total: orderTotal,
+            taxes: orderTaxes,
+            subtotal: orderSubtotal,
+            cart: orderCart,
+            customer_details: {
+                name: customerName,
+                email: customerEmail,
+                address: customerAddress,
+                phone: customerPhone,
+            }
+
         }
 
         //create the new collection
