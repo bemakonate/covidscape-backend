@@ -34,8 +34,8 @@
       "type": "decimal"
     },
     "category": {
-      "model": "categories",
-      "via": "products"
+      "via": "products",
+      "model": "categories"
     }
   }
 }
